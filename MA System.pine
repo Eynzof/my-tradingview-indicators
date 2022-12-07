@@ -1,0 +1,21 @@
+//@version=4
+study(title="Moving Average", shorttitle="MA", overlay=true, resolution="")
+src = input(close, title="Source")
+len = input(5, minval=1, title="MA 1")
+out = sma(src, len)
+plot(out, color=#e1be87, title="MA 1", offset=0)
+
+len2 = input(10, minval=1, title="MA 2")
+plot(sma(src, len2), color=#79a9aa, title="MA 2", offset=0)
+
+len3 = input(30, minval=1, title="MA 3")
+plot(sma(src, len3), color=#b99ae4, title="MA 3", offset=0)
+
+len4 = input(60, minval=1, title="MA 4")
+plot(sma(src, len4), color=#e15049, title="MA 4", offset=0)
+
+len5 = input(120, minval=1, title="MA 5")
+plot(sma(src, len5), color=#8bca46, title="MA 5", offset=0)
+
+// len6 = input(200, minval=1, title="MA 6")
+// plot(sma(src, len6), color=#6526f2, title="MA 6", offset=0)

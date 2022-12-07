@@ -1,0 +1,66 @@
+//@version=4
+////////////////////////////////////////////////////////////
+// If Volume is less then the previous 20 intervals, Volume is gray.
+// If Volume is greater then the previous 40 intervals, Volume is black.
+// If Volume is less then the previous 2 intervals, Volume is purple.
+// If Volume is less then the previous, Volume is red.
+// If Volume is greater then the previous, Volume is blue.
+// Other - white.
+// You can add on the indicator a 2.5 Standart Deviation of a 20 period
+// Bollinger Band Shifted 3 periods forward.
+////////////////////////////////////////////////////////////
+study(title="VSA Volume [Eynzo]")
+res = input(title="Resolution", type=input.resolution, defval="60")
+Length_HH = input(40, minval=1)
+Length_LLSmall = input(2, minval=2)
+Length_LLBig = input(20, minval=2)
+LengthMA    = input(20, minval=1)
+hline(0, color=color.gray, linestyle=hline.style_dashed)
+Volume  = security(syminfo.tickerid,res, volume, lookahead = barmerge.lookahead_on)
+xSMA_vol = sma(Volume, LengthMA)
+xHH_vol = highest(Volume, Length_HH)
+xLL_volSmall = lowest(Volume, Length_LLSmall)
+xLL_volBig = lowest(Volume, Length_LLBig)
+BarColor = iff(Volume > xHH_vol[1], color.black,
+             iff(Volume < xLL_volBig[1], color.gray,
+              iff(Volume < xLL_volSmall[1], color.purple,
+               iff(Volume > Volume[1], color.blue,
+                 iff(Volume < Volume[1], color.red, color.white)))))
+plot(Volume, color=BarColor, title="Vol", style =plot.style_histogram, linewidth=2)
+plot(xSMA_vol, color=color.black, title="SMA")
+
+
+showMA =                input(defval=false,  title="Show Volume Moving Average")
+lengthVolumeMA =        input(defval=20,    title="Length of MA applied on Volume",     type=input.integer)
+ratioUltraVolume =      input(defval=2.2,   title="Ultra High Volume Ratio",            type=input.float)
+ratioVeryHighVolume =   input(defval=1.8,   title="Very High Volume Ratio",             type=input.float)
+ratioHighVolume =       input(defval=1.2,   title="High Volume Ratio",                  type=input.float)
+ratioNormalVolume =     input(defval=0.8,   title="Normal Volume Ratio",                type=input.float)
+ratioLowVolume =        input(defval=0.4,   title="Low Volume Ratio",                   type=input.float)
+ratioVeryLowVolume =    input(defval=0.4,   title="Very Low Volume Ratio",              type=input.float)
+
+
+// WILDERS MA
+float volumeMA  = 0
+volumeMA := nz(volumeMA[1]) + (volume-nz(volumeMA[1])) / lengthVolumeMA
+
+
+ultraHighVolumeMin   = volumeMA * ratioUltraVolume
+veryHighVolumeMin    = volumeMA * ratioVeryHighVolume
+highVolumeMin        = volumeMA * ratioHighVolume
+normalVolumeMin      = volumeMA * ratioNormalVolume
+lowVolumeMin         = volumeMA * ratioLowVolume
+veryLowVolumeMin     = volumeMA * ratioVeryLowVolume
+
+
+volUltraHigh        = volume >= ultraHighVolumeMin                                      ? true : false
+volVeryHigh         = volume >= veryHighVolumeMin   and volume < ultraHighVolumeMin     ? true : false
+volHigh             = volume >= highVolumeMin       and volume < veryHighVolumeMin      ? true : false
+volNormal           = volume >= normalVolumeMin     and volume < highVolumeMin          ? true : false
+volLow              = volume >= lowVolumeMin        and volume < normalVolumeMin        ? true : false
+volVeryLow          = volume < lowVolumeMin                                             ? true : false
+
+dir     = close > open
+
+bcolor = dir ? (volUltraHigh ? #70c6ec : (volVeryHigh? #67ad5b : (volHigh ? color.rgb(103,173,91,20) : (volNormal ? color.rgb(103,173,91,50) : color.rgb(103,173,91,90))))) : (volUltraHigh ? #9a5bb1 : (volVeryHigh? #ec5f59 : (volHigh ? color.rgb(236,95,89,20) : (volNormal ? color.rgb(236,95,89,50) : color.rgb(236,95,89,90)))))
+barcolor(bcolor)
